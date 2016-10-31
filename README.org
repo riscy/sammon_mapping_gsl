@@ -1,0 +1,123 @@
+#+TITLE: Sammon Mapping
+
+* Table of Contents :TOC_4_gh:noexport:
+ - [[#description][Description]]
+ - [[#compile][Compile]]
+ - [[#usage][Usage]]
+     - [[#input-format][Input format]]
+     - [[#examples][Examples]]
+
+* Description
+  The Sammon Mapping is a popular data exploration technique for mapping points
+  in high-dimensional space to points in a low-dimensional space in such a way
+  that preserves the pairwise distances.  Low-dimensional data is easier to
+  visualize, and the simpler representation can sometimes reveal new patterns.
+
+  You'll find this algorithm in many visualization toolkits, but this
+  implementation is written to be among the fastest.  It is based on the
+  following sources:
+
+  1. "A Nonlinear Mapping for Data Structure Analysis".  John
+     W. Sammon.  In IEEE Transactions on Computers 18 (1969).
+  2. Gavin Cowley and Nicola Talbot's MATLAB implementation of the
+     Sammon Map (2007).
+  3. "Line Search Methods for Unconstrained Optimisation".  Raphael
+     Howser.  Lecture notes, Oxford University (2007).
+
+* Compile
+  This implementation is written using the GNU Scientific Library and so
+  requires both the BLAS and GSL libraries.  If you're using macOS, for example,
+  you can use ~brew~ to install these:
+
+  #+BEGIN_SRC sh
+  brew install liblas
+  brew install gsl
+  #+END_SRC
+
+  Then compile in one of the following ways:
+
+  #+BEGIN_SRC sh
+  gcc -o smds -lgsl -lblas -lm smds.c
+  gcc -o smds -lgsl -lblas -lm -D USE_NEWTON smds.c
+  gcc -o smds -lgsl -lblas -lm -D USE_SMART_LINE smds.c
+  gcc -o smds -lgsl -lblas -lm -D USE_NEWTON -D USE_SMART_LINE smds.c
+  #+END_SRC
+
+  The preprocessor options work as follows:
+  - ~-D USE_NEWTON~ yields a binary that uses Newton's method to compute the
+    search direction per Sammon's original paper. Otherwise, the binary performs
+    simple gradient descent, but benefits from a smaller memory footprint.
+  - ~-D USE_SMART_LINE~ yields a binary that uses a "smart" backtracking
+    Armijo/Goldstein line search.  Otherwise, the binary uses a "step-halving"
+    heuristic due to Cowley and Talbot.  Both are improvements over the static
+    "magic factor" Sammon uses.
+
+* Usage
+
+  Run the binary with:
+
+  #+BEGIN_SRC sh
+  ./smds input_file.dat
+  #+END_SRC
+
+*** Input format
+    ~input_file.dat~ has the following format.
+    1. First specify the number ~n~ of points being manipulated:
+
+       ~num_points n~
+
+    2. Then specify the target dimensionality ~d~ (usually 2 or 3):
+
+       ~target_dim d~
+
+    3. Next, specify the type of input data you plan to supply.  It will be
+       either an ~n~ by ~D~ matrix of points in ~D~-dimensional space:
+
+       ~type_of_data points D~
+
+       Or it will be an ~n~ by ~n~ matrix of pairwise distances:
+
+       ~type_of_data distances~
+
+    4. Finally, insert the corresponding input matrix with newline-separated
+       rows and space-separated columns.
+*** Examples
+    An input file to map 3D points onto the plane:
+
+    #+BEGIN_SRC
+    num_points 8
+    target_dim 2
+    type_of_data points 3
+    -12.975580  10.774459  4.972337
+    -12.090570  11.279190  5.386839
+    -11.253977  11.769131  5.839330
+    -10.408915  12.257676  6.342879
+    -15.182776  10.873951  6.858937
+    -14.568763  11.190006  7.364072
+    -15.778972  11.877528  7.884144
+    -15.102866  12.234200  8.397689
+    #+END_SRC
+
+    An input file to map distance data to points on the plane (note the 1s
+    on the diagonal):
+
+    #+BEGIN_SRC
+    num_points 15
+    target_dim 2
+    type_of_data distances
+    0 1 3 2 3 5 5 4 3 4 5 5 5 4 5
+    1 0 2 1 2 4 4 3 2 3 4 4 4 3 4
+    3 2 0 1 2 4 4 3 2 3 4 4 4 3 4
+    2 1 1 0 1 3 3 2 1 2 3 3 3 2 3
+    3 2 2 1 0 4 4 3 2 3 4 4 4 3 4
+    5 4 4 3 4 0 4 1 2 3 2 4 4 3 4
+    5 4 4 3 4 4 0 3 2 1 4 2 4 3 4
+    4 3 3 2 3 1 3 0 1 2 1 3 3 2 3
+    3 2 2 1 2 2 2 1 0 1 2 2 2 1 2
+    4 3 3 2 3 3 1 2 1 0 3 1 3 2 3
+    5 4 4 3 4 2 4 1 2 3 0 4 4 3 4
+    5 4 4 3 4 4 2 3 2 1 4 0 4 3 4
+    5 4 4 3 4 4 4 3 2 3 4 4 0 1 2
+    4 3 3 2 3 3 3 2 1 2 3 3 1 0 1
+    5 4 4 3 4 4 4 3 2 3 4 4 2 1 0
+    #+END_SRC
