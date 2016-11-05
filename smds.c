@@ -339,21 +339,22 @@ gsl_matrix* sammon_mapping(const gsl_matrix * D_goal, size_t target_dim) {
 ///=============
 
 void print_matrix(FILE * stream, gsl_matrix * X) {
-  size_t ii;
-  for (ii = 0; ii < X->size1; ++ ii) {
+  for (size_t ii = 0; ii < X->size1; ++ ii) {
+    if (ii > 0)
+      fprintf(stream, "\n");
     if (ii == 10 && X->size1 > 30 && (stream == stdout || stream == stderr)) {
       fprintf(stream, " |:\n");
       ii = X->size1 - 10;
     }
-    size_t jj;
-    for (jj = 0; jj < X->size2; ++ jj) {
+    for (size_t jj = 0; jj < X->size2; ++ jj) {
+      if (jj > 0)
+        fprintf(stream, " ");
       if (jj == 3 && X->size2 > 10 && (stream == stdout || stream == stderr)) {
         fprintf(stream, " ... ");
         jj = X->size2 - 3;
       }
-      fprintf(stream, " %8f ", gsl_matrix_get(X, ii, jj));
+      fprintf(stream, "%8f", gsl_matrix_get(X, ii, jj));
     }
-    fprintf(stream, "\n");
   }
   fprintf(stream, "\n");
 }

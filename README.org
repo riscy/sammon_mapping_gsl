@@ -1,5 +1,7 @@
 #+TITLE: Sammon Mapping
 
+[[file:img/spiral_embedding.png]]
+
 * Table of Contents :TOC_4_gh:noexport:
  - [[#description][Description]]
  - [[#compile][Compile]]
