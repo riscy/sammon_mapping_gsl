@@ -100,8 +100,7 @@
     -15.102866  12.234200  8.397689
     #+END_SRC
 
-    An input file to map distance data to points on the plane (note the 1s
-    on the diagonal):
+    An input file to map distance data to points on the plane:
 
     #+BEGIN_SRC
     num_points 15
